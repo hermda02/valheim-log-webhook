@@ -1,0 +1,21 @@
+[project]
+name = "valheim-log-webhook"
+version = "0.1.0"
+description = "Valheim log follower sidecar for webhook events"
+requires-python = ">=3.13"
+
+[project.scripts]
+valheim-log-webhook = "valheim_log_webhook.cli:main"
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+]

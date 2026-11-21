@@ -1,0 +1,30 @@
+services:
+  valheim-log-webhook:
+    image: valheim-log-webhook:local
+    container_name: valheim-log-webhook
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Oslo
+      BACKUPS: "true"
+      BACKUPS_CRON: "5 4 * * *"
+      BACKUP_GRACE_MINUTES: "25"
+      BACKUP_SUPPRESS_BEFORE_MINUTES: "5"
+      BACKUP_SUPPRESS_AFTER_MINUTES: "25"
+      BACKUP_HEALTHCHECK_INTERVAL_SECONDS: "30"
+      HEALTHCHECK_UDP_PORT: "2456"
+      VALHEIM_CONTAINER_NAME: valheim-server
+      LOG_LEVEL: INFO
+      LOG_RECONNECT_DELAY_SECONDS: "5"
+      WEBHOOK_TIMEOUT_SECONDS: "5"
+      WEBHOOK_RETRY_DELAY_SECONDS: "1"
+      DISCORD_WEBHOOK_DEBUG: ${DISCORD_WEBHOOK_DEBUG}
+      DISCORD_WEBHOOK_LOG: ${DISCORD_WEBHOOK_LOG}
+      DISCORD_WEBHOOK_PLAYERS: ${DISCORD_WEBHOOK_PLAYERS}
+      VALHEIM_LOG_FILTER_ONLINE: Game server connected
+      VALHEIM_LOG_FILTER_OFFLINE: Shutting down
+      VALHEIM_LOG_FILTER_JOIN: Got character ZDOID from
+      VALHEIM_LOG_FILTER_LEAVE: Closing socket
+      VALHEIM_LOG_FILTER_RAID: "Random event set:"
+      VALHEIM_LOG_FILTER_DEATH: got status effect Dead
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
