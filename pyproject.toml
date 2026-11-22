@@ -1,6 +1,6 @@
 [project]
 name = "valheim-log-webhook"
-version = "0.1.0"
+version = "1.0.0-rc.1"
 description = "Valheim log follower sidecar for webhook events"
 requires-python = ">=3.13"
 
