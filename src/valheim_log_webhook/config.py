@@ -38,6 +38,8 @@ class RuntimeConfig:
         Timeout in seconds for outbound webhook requests.
     webhook_retry_delay_seconds : float
         Delay before one retry on transient send failures.
+    player_map_file_path : str | None
+        Optional JSON file path used to persist Steam ID to player-name mappings.
     timezone_name : str
         IANA timezone used for backup schedule interpretation.
     backups_enabled : bool
@@ -69,6 +71,7 @@ class RuntimeConfig:
     discord_webhook_players: str | None = None
     webhook_timeout_seconds: float = 5.0
     webhook_retry_delay_seconds: float = 1.0
+    player_map_file_path: str | None = "/tmp/valheim-player-map.json"
     timezone_name: str = "UTC"
     backups_enabled: bool = False
     backups_cron: str | None = None
@@ -110,6 +113,9 @@ class RuntimeConfig:
             webhook_timeout_seconds=float(os.getenv("WEBHOOK_TIMEOUT_SECONDS", "5")),
             webhook_retry_delay_seconds=float(
                 os.getenv("WEBHOOK_RETRY_DELAY_SECONDS", "1")
+            ),
+            player_map_file_path=_clean_optional_path(
+                os.getenv("VALHEIM_PLAYER_MAP_PATH", "/tmp/valheim-player-map.json")
             ),
             timezone_name=os.getenv("TZ", "UTC"),
             backups_enabled=_parse_bool(os.getenv("BACKUPS", "false")),
@@ -164,3 +170,26 @@ def _parse_bool(value: str) -> bool:
         Parsed boolean.
     """
     return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _clean_optional_path(value: str | None) -> str | None:
+    """Normalize optional filesystem paths.
+
+    Parameters
+    ----------
+    value : str | None
+        Raw environment value.
+
+    Returns
+    -------
+    str | None
+        Stripped non-empty path or ``None``.
+    """
+    if value is None:
+        return None
+
+    stripped = value.strip()
+    if stripped == "":
+        return None
+
+    return stripped

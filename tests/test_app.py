@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from pathlib import Path
 
 from valheim_log_webhook import app
 from valheim_log_webhook.config import RuntimeConfig
@@ -137,5 +138,43 @@ def test_process_lines_resolves_leave_player_name_from_prior_join(
 
     assert [outbound.payload["content"] for outbound in sent] == [
         "[JOIN] Leif joined the realm.",
+        "[LEAVE] Leif left the realm.",
+    ]
+
+
+def test_process_lines_resolves_leave_name_from_persisted_player_map(
+    monkeypatch: object,
+    tmp_path: Path,
+) -> None:
+    sent: list[OutboundWebhook] = []
+
+    def fake_send(outbound: OutboundWebhook, **_kwargs: object) -> SendResult:
+        sent.append(outbound)
+        return SendResult(success=True, attempts=1, status_code=204)
+
+    monkeypatch.setattr(app, "send_with_retry", fake_send)
+
+    map_path = tmp_path / "player-map.json"
+    config = RuntimeConfig(
+        **{
+            **_config().__dict__,
+            "player_map_file_path": str(map_path),
+        }
+    )
+
+    app.process_lines(
+        ["Got character ZDOID from Leif : owner 76561198000000002"],
+        config,
+        on_parse_miss=lambda _miss: None,
+    )
+    sent.clear()
+
+    app.process_lines(
+        ["Closing socket 76561198000000002"],
+        config,
+        on_parse_miss=lambda _miss: None,
+    )
+
+    assert [outbound.payload["content"] for outbound in sent] == [
         "[LEAVE] Leif left the realm.",
     ]
