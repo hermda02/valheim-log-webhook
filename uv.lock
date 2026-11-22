@@ -65,7 +65,7 @@ wheels = [
 
 [[package]]
 name = "valheim-log-webhook"
-version = "1.0.0-rc.1"
+version = "1.0.0-rc.2"
 source = { editable = "." }
 
 [package.dev-dependencies]
