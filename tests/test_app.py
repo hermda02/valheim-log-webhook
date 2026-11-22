@@ -178,3 +178,30 @@ def test_process_lines_resolves_leave_name_from_persisted_player_map(
     assert [outbound.payload["content"] for outbound in sent] == [
         "[LEAVE] Leif left the realm.",
     ]
+
+
+def test_process_lines_initializes_persisted_player_map_file(
+    monkeypatch: object,
+    tmp_path: Path,
+) -> None:
+    sent: list[OutboundWebhook] = []
+
+    def fake_send(outbound: OutboundWebhook, **_kwargs: object) -> SendResult:
+        sent.append(outbound)
+        return SendResult(success=True, attempts=1, status_code=204)
+
+    monkeypatch.setattr(app, "send_with_retry", fake_send)
+
+    map_path = tmp_path / "player-map.json"
+    config = RuntimeConfig(
+        **{
+            **_config().__dict__,
+            "player_map_file_path": str(map_path),
+        }
+    )
+
+    app.process_lines([], config, on_parse_miss=lambda _miss: None)
+
+    assert sent == []
+    assert map_path.exists()
+    assert map_path.read_text(encoding="utf-8") == "{}"

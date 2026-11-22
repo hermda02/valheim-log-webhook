@@ -39,6 +39,7 @@ def process_lines(
         Callback invoked for non-emitting parse outcomes.
     """
     known_player_names = _load_player_name_map(config.player_map_file_path)
+    _initialize_player_name_map_file(config.player_map_file_path, known_player_names)
     connected_players: set[str] = set()
 
     for event in parse_stream(lines, config, on_parse_miss=on_parse_miss):
@@ -220,5 +221,40 @@ def _persist_player_name_map(
             encoding="utf-8",
         )
         temp_path.replace(map_path)
+        LOGGER.debug(
+            "player_map_persisted path=%s entries=%s",
+            map_path,
+            len(known_player_names),
+        )
     except OSError as exc:
         LOGGER.error("player_map_persist_failed path=%s error=%s", map_path, exc)
+
+
+def _initialize_player_name_map_file(
+    map_file_path: str | None,
+    known_player_names: dict[str, str],
+) -> None:
+    """Ensure the player-name map file exists when persistence is enabled."""
+    if map_file_path is None:
+        LOGGER.info("player_map_persistence_disabled")
+        return
+
+    map_path = Path(map_file_path)
+    if map_path.exists():
+        LOGGER.info(
+            "player_map_file_ready path=%s entries=%s",
+            map_path,
+            len(known_player_names),
+        )
+        return
+
+    _persist_player_name_map(map_file_path, known_player_names)
+    if map_path.exists():
+        LOGGER.info(
+            "player_map_file_initialized path=%s entries=%s",
+            map_path,
+            len(known_player_names),
+        )
+        return
+
+    LOGGER.error("player_map_file_init_failed path=%s", map_path)

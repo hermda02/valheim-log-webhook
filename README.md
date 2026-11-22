@@ -58,6 +58,8 @@ docker compose logs -f valheim-log-webhook
 
 Note: this sidecar uses Docker log streaming from the host daemon, so it needs read access to `/var/run/docker.sock` and a Docker CLI in the sidecar image.
 
+Player-map persistence note: the sidecar initializes `VALHEIM_PLAYER_MAP_PATH` on startup (default `/tmp/valheim-player-map.json`) and writes updates atomically via a short-lived `*.tmp` file.
+
 ## Backup-Aware Down Alerts
 
 - Offline log events are suppressed inside the backup window (`BACKUP_SUPPRESS_BEFORE_MINUTES` to `BACKUP_SUPPRESS_AFTER_MINUTES` around `BACKUPS_CRON`).
